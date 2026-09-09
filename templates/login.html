@@ -1,10 +1,61 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Вход</h2>
+<form id="login-form">
+    <div class="form-group">
+        <label for="username">Email</label>
+        <input type="email" id="username" name="username" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <button type="submit" class="btn btn-success">Войти</button>
+</form>
+
+<div id="login-result" class="flash" style="display:none;"></div>
+
+<p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('login-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const urlEncoded = new URLSearchParams(formData);
+
+        try {
+            const response = await fetch('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                credentials: 'include',
+                body: urlEncoded
+            });
+
+            const resultDiv = document.getElementById('login-result');
+
+            if (response.ok) {
+                resultDiv.className = 'flash flash-success';
+                resultDiv.textContent = 'Вход выполнен.';
+                resultDiv.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/feed';
+                }, 1000);
+            } else {
+                const error = await response.json();
+                resultDiv.className = 'flash flash-error';
+                resultDiv.textContent = 'Ошибка: ' + JSON.stringify(error.detail || error);
+                resultDiv.style.display = 'block';
+            }
+        } catch (error) {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.className = 'flash flash-error';
+            resultDiv.textContent = 'Ошибка соединения: ' + error.message;
+            resultDiv.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

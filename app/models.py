@@ -13,7 +13,7 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     rating = Column(Float, nullable=False, server_default="0.0")
     registration_date = Column(DateTime, server_default=func.now())
-
+    is_active = Column(Boolean, default=True)
 
 
 class Category(Base):
@@ -44,7 +44,7 @@ class Advertisement(Base):
     title = Column(String(255), index=True)
     description = Column(String, nullable=True)
     price = Column(Integer, nullable=False)
-    status = Column(String, default="draft", index=True)
+    status = Column(String, default="active", index=True)
     city = Column(Integer, ForeignKey("cities.id"), nullable=False, index=True)
     address = Column(String, nullable=True, index=True)
     views_count = Column(Integer, default=0)

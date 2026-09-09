@@ -1,10 +1,411 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<div style="margin-top: 1.5%" class="ad-detail">
+    <div class="ad-header">
+        <h2>{{ ad.title }}</h2>
+        <span class="price">{{ ad.price }} ₽</span>
+    </div>
+
+    <div class="ad-grid">
+        <div class="ad-images">
+            {% if images %}
+                <div class="slider-container">
+                    <div class="slider-wrapper">
+                        {% for img in images %}
+                            <div class="slide {% if loop.first %}active{% endif %}">
+                                <img src="{{ img.url }}" alt="Фото" class="slide-image">
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% if images|length > 1 %}
+                        <button class="slider-btn prev-btn" onclick="changeSlide(-1)">❮</button>
+                        <button class="slider-btn next-btn" onclick="changeSlide(1)">❯</button>
+                        <div class="slider-dots">
+                            {% for img in images %}
+                                <span class="dot {% if loop.first %}active{% endif %}" data-index="{{ loop.index0 }}" onclick="goToSlide({{ loop.index0 }})"></span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="no-image">Нет фото</div>
+            {% endif %}
+        </div>
+
+        <div class="right-panel">
+            {% if user %}
+                {% if is_owner %}
+                    <div class="owner-actions">
+                        <a href="/ads/{{ ad.id }}/edit" class="btn btn-block">Редактировать</a>
+                        <a href="/ads/{{ ad.id }}/delete" class="btn btn-danger btn-block" onclick="return confirm('Удалить объявление?')">Удалить</a>
+                    </div>
+                    <div class="ad-stats">
+                        <span class="views">👁 {{ ad.views_count }}</span>
+                        <span class="date">📅 {{ ad.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
+                {% else %}
+                    <div class="seller-card">
+                        <div class="seller-avatar">
+                            {% if seller.avatar_url %}
+                                <img src="{{ seller.avatar_url }}" alt="{{ seller.name }}" class="avatar-img">
+                            {% else %}
+                                <div class="avatar-placeholder">{{ seller.name[0]|upper }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="seller-info">
+                            <h3>{{ seller.name }}</h3>
+                            <p><strong>Рейтинг:</strong> {{ seller.rating }}</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-contact">
+                        <a href="/messages/new?ad_id={{ ad.id }}">Связаться с продавцом</a>
+                    </button>
+                    <button class="btn btn-favorites">
+                        {% if is_favorite %}
+                            <a href="/favorites/remove/{{ ad.id }}">Удалить из избранного</a>
+                        {% else %}
+                            <a href="/favorites/add/{{ ad.id }}">В избранное</a>
+                        {% endif %}
+                    </button>
+                    <div class="ad-stats">
+                        <span class="views">👁 {{ ad.views_count }}</span>
+                        <span class="date">📅 {{ ad.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div class="guest-message">
+                    <p>Для связи с продавцом <a href="/login">войдите</a> или <a href="/register">зарегистрируйтесь</a>.</p>
+                </div>
+                <div class="ad-stats">
+                    <span class="views">👁 {{ ad.views_count }}</span>
+                    <span class="date">📅 {{ ad.created_at.strftime('%d.%m.%Y %H:%M') }}</span>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="ad-description">
+        <h3>Описание</h3>
+        <p>{{ ad.description or 'Нет описания' }}</p>
+    </div>
+
+    <div class="ad-params">
+        <h3>Характеристики</h3>
+        <ul>
+            {% for key, value in ad.params.items() %}
+                <li><strong>{{ key }}:</strong> {{ value }}</li>
+            {% else %}
+                <li>Нет дополнительных параметров</li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="ad-location">
+        <h3>Местоположение</h3>
+        <p><strong>Город:</strong> {{ city_name }}</p>
+        <p><strong>Адрес:</strong> {{ ad.address or 'Не указан' }}</p>
+    </div>
+</div>
+
+<style>
+    .ad-detail {
+        max-width: 80%;
+        margin: 0 auto;
+        padding: 20px 0;
+    }
+    .ad-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .ad-header h2 {
+        margin: 0;
+        font-size: 28px;
+    }
+    .price {
+        font-size: 28px;
+        font-weight: bold;
+        color: #28a745;
+    }
+
+    .ad-grid {
+        display: flex;
+        gap: 30px;
+        margin-bottom: 30px;
+    }
+    .ad-images {
+        flex: 2;
+        min-width: 0;
+    }
+    .right-panel {
+        flex: 1;
+        min-width: 220px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .slider-container {
+        position: relative;
+        width: 100%;
+        overflow: hidden;
+        border-radius: 8px;
+        background: #f8f9fa;
+        aspect-ratio: 4 / 3;
+    }
+    .slider-wrapper {
+        position: relative;
+        width: 100%;
+        height: 100%;
+    }
+    .slide {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .slide.active {
+        opacity: 1;
+        position: relative;
+    }
+    .slide-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        background: white;
+    }
+    .slider-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0,0,0,0.5);
+        color: white;
+        border: none;
+        padding: 10px 15px;
+        cursor: pointer;
+        font-size: 24px;
+        border-radius: 50%;
+        z-index: 10;
+        transition: background 0.3s;
+    }
+    .slider-btn:hover {
+        background: rgba(0,0,0,0.8);
+    }
+    .prev-btn { left: 10px; }
+    .next-btn { right: 10px; }
+
+    .slider-dots {
+        text-align: center;
+        padding: 10px 0;
+        position: relative;
+        z-index: 5;
+    }
+    .dot {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        margin: 0 5px;
+        background: #ccc;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .dot.active {
+        background: dodgerblue;
+    }
+    .no-image {
+        padding: 40px;
+        text-align: center;
+        background: #f8f9fa;
+        border-radius: 8px;
+        color: #6c757d;
+    }
+
+    .seller-card {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #e9ecef;
+    }
+    .seller-avatar {
+        flex-shrink: 0;
+    }
+    .avatar-img {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid dodgerblue;
+    }
+    .avatar-placeholder {
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: dodgerblue;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: white;
+        border: 2px solid dodgerblue;
+    }
+    .seller-info h3 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+    }
+    .seller-info p {
+        margin: 0;
+        font-size: 14px;
+        color: #495057;
+    }
+
+    .btn-block {
+        display: block;
+        text-align: center;
+        width: 100%;
+        padding: 10px;
+        border-radius: 25px;
+        font-size: 16px;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .btn-contact, .btn-favorites {
+        border-radius: 25px;
+        padding: 10px 15px;
+        border: none;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background 0.3s;
+        width: 100%;
+        text-align: center;
+    }
+    .btn-contact {
+        background: dodgerblue;
+        color: white;
+    }
+    .btn-contact:hover {
+        background: #0e589f;
+    }
+    .btn-contact a {
+        color: white;
+        text-decoration: none;
+        display: block;
+    }
+    .btn-favorites {
+        background: #711eff;
+        color: white;
+    }
+    .btn-favorites:hover {
+        background: #5b1ad1;
+    }
+    .btn-favorites a {
+        color: white;
+        text-decoration: none;
+        display: block;
+    }
+
+    .ad-stats {
+        display: flex;
+        justify-content: space-around;
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 25px;
+        border: 1px solid #e9ecef;
+        font-size: 14px;
+        color: #495057;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .ad-description, .ad-params, .ad-location {
+        margin-top: 25px;
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+    .ad-description h3, .ad-params h3, .ad-location h3 {
+        margin-top: 0;
+    }
+    .ad-params ul {
+        padding-left: 20px;
+        margin: 0;
+    }
+    .ad-params li {
+        margin-bottom: 4px;
+    }
+
+    @media (max-width: 768px) {
+        .ad-detail {
+            max-width: 95%;
+        }
+        .ad-grid {
+            flex-direction: column;
+        }
+        .right-panel {
+            flex: 1;
+            min-width: unset;
+        }
+        .ad-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .slider-container {
+            aspect-ratio: 4 / 3;
+        }
+        .seller-card {
+            flex-direction: column;
+            text-align: center;
+        }
+    }
+</style>
+
+<script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.dot');
+
+    function showSlide(index) {
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        slides.forEach((s, i) => {
+            s.classList.toggle('active', i === index);
+        });
+        dots.forEach((d, i) => {
+            d.classList.toggle('active', i === index);
+        });
+        currentSlide = index;
+    }
+
+    function changeSlide(direction) {
+        showSlide(currentSlide + direction);
+    }
+
+    function goToSlide(index) {
+        showSlide(index);
+    }
+
+    if (slides.length > 0) {
+        showSlide(0);
+    }
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowLeft') changeSlide(-1);
+        if (e.key === 'ArrowRight') changeSlide(1);
+    });
+</script>
+{% endblock %}

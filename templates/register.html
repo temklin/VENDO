@@ -1,10 +1,107 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Регистрация</h2>
+<form id="register-form">
+    <div class="form-group">
+        <label for="email">Email*</label>
+        <input type="email" id="email" name="email" required>
+    </div>
+    <div class="form-group">
+        <label for="name">Имя*</label>
+        <input type="text" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+        <label for="password">Пароль*</label>
+        <input type="password" id="password" name="password" required>
+    </div>
+    <div class="form-group">
+        <label for="phone">Номер телефона</label>
+        <input type="tel" id="phone" name="phone">
+    </div>
+    <button type="submit" class="btn btn-success">Зарегистрироваться</button>
+</form>
+
+<div id="register-result" class="flash" style="display:none;"></div>
+
+<p>Уже есть аккаунт? <a href="/login">Войти</a></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('register-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+        const data = {
+            email: formData.get('email'),
+            name: formData.get('name'),
+            password: formData.get('password'),
+            phone: formData.get('phone') || null,
+            avatar_url: formData.get('avatar_url') || null
+        };
+
+        const resultDiv = document.getElementById('register-result');
+
+        try {
+            const response = await fetch('/users/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                resultDiv.className = 'flash flash-success';
+                resultDiv.textContent = 'Регистрация успешна!';
+                resultDiv.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 1500);
+            } else {
+                const error = await response.json();
+                resultDiv.className = 'flash flash-error';
+                resultDiv.textContent = 'Ошибка: ' + JSON.stringify(error.detail || error);
+                resultDiv.style.display = 'block';
+            }
+            const loginData = new URLSearchParams(
+                {
+                    username: data.email,
+                    password: data.password
+                }
+            );
+
+            const loginResponse = await fetch('/auth/login', {
+                method: 'POST',
+                header: { 'Content-Type': 'application/x-www-form-urlencoded'},
+                credentials: 'include',
+                body: loginData
+            });
+
+            if (!loginResponse.ok) {
+                resultDiv.className = 'flash flash-warning';
+                resultDiv.textContent = 'Редирект каким-то хуем не работает, вводите данные заново, но уже ручками';
+                resultDiv.style.display = 'block';
+                setTimeout(() => {
+                    window.location.href = '/login';
+                }, 2000);
+                return;
+            }
+
+            resultDiv.className = 'flash flash-success';
+            resultDiv.textContent = 'Регистрация выполнена, переходим в профиль';
+            resultDiv.style.display = 'block';
+        setTimeout(() => {
+            window.location.href = '/profile';
+        }, 1000);
+
+
+
+        } catch (error) {
+            resultDiv.className = 'flash flash-error';
+            resultDiv.textContent = 'Ошибка соединения: ' + error.message;
+            resultDiv.style.display = 'block';
+        }
+    });
+</script>
+{% endblock %}

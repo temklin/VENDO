@@ -45,7 +45,6 @@ class AttributeResponse(AttributeCreate):
 
 
 class AdvertisementCreate(BaseModel):
-    user_id: int
     category_id: int
     title: str
     description: Optional[str] = None

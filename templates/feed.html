@@ -1,10 +1,246 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>$Title$</title>
-</head>
-<body>
-$END$
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<form method="get" action="/feed" style="display:flex; flex-wrap:wrap; gap:15px; align-items:end; width: 100%; margin-bottom: 25px; margin-top: 3%">
+<!--    <div style="display:flex; flex:1; min-width:200px;">-->
+<!--        <input type="text" name="search" value="{{ filters.search or '' }}" placeholder="Поиск по заголовку..." style="flex:1; padding:10px 15px; border:1px solid #ced4da; border-radius:20px 0 0 20px; outline:none;">-->
+<!--        <button type="submit" class="btn" style="border-radius:0 20px 20px 0; padding:10px 20px;">Поиск</button>-->
+<!--    </div>-->
+
+<!--    <div style="display:flex; flex-wrap:wrap; gap:10px; align-items:end;">-->
+<!--        <div>-->
+<!--            <label for="category_id" style="font-size:13px; font-weight:600;">Категория</label>-->
+<!--            <select id="category_id" name="category_id" style="padding:8px 12px; border-radius:20px; border:1px solid #ced4da;">-->
+<!--                <option value="">Все</option>-->
+<!--                {% for cat in categories %}-->
+<!--                    <option value="{{ cat.id }}" {% if filters.category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>-->
+<!--                {% endfor %}-->
+<!--            </select>-->
+<!--        </div>-->
+<!--        <div>-->
+<!--            <label for="city_id" style="font-size:13px; font-weight:600;">Город</label>-->
+<!--            <select id="city_id" name="city_id" style="padding:8px 12px; border-radius:20px; border:1px solid #ced4da;">-->
+<!--                <option value="">Все</option>-->
+<!--                {% for city in cities %}-->
+<!--                    <option value="{{ city.id }}" {% if filters.city_id == city.id %}selected{% endif %}>{{ city.name }}</option>-->
+<!--                {% endfor %}-->
+<!--            </select>-->
+<!--        </div>-->
+<!--        <div>-->
+<!--            <label for="min_price" style="font-size:13px; font-weight:600;">Цена от</label>-->
+<!--            <input type="number" id="min_price" name="min_price" value="{{ filters.min_price or '' }}" placeholder="0" style="width:100px; padding:8px 12px; border-radius:20px; border:1px solid #ced4da;">-->
+<!--        </div>-->
+<!--        <div>-->
+<!--            <label for="max_price" style="font-size:13px; font-weight:600;">Цена до</label>-->
+<!--            <input type="number" id="max_price" name="max_price" value="{{ filters.max_price or '' }}" placeholder="1000000" style="width:100px; padding:8px 12px; border-radius:20px; border:1px solid #ced4da;">-->
+<!--        </div>-->
+<!--        <div style="display: flex; flex-direction: row;">-->
+<!--            <button type="submit" class="btn" style="border-bottom-right-radius: 0px; border-top-right-radius: 0px; height: 100%; border: 1px solid dodgerblue;">Применить</button>-->
+<!--        <a href="/feed" class="btn btn-outline" style="border-top-left-radius: 0px; border-bottom-left-radius: 0px; margin: 0 auto; border: 1px solid dodgerblue">Сбросить</a>-->
+<!--        </div>-->
+    <div class="filter_blocks_container">
+    <div class="filter_blocks">
+        <div class="filter_block">
+            <span class="filter-text">Авто</span>
+            <img src="../static/images/frontend/colored/cat_auto.svg" alt="Авто">
+        </div>
+        <div class="filter_block">
+            <span class="filter-text">Недвижимость</span>
+            <img src="../static/images/frontend/colored/cat_houses.svg" alt="Недвижимость">
+        </div>
+        <div class="filter_block">
+            <span class="filter-text">Электроника</span>
+            <img src="../static/images/frontend/colored/cat_smartphones.svg" alt="Электроника">
+        </div>
+        <div class="filter_block">
+            <span class="filter-text">Игровые приставки</span>
+            <img src="../static/images/frontend/colored/cat_consoles.svg" alt="Игровые приставки">
+        </div>
+        <div class="filter_block">
+            <span class="filter-text">Одежда</span>
+            <img src="../static/images/frontend/colored/cat_clothes.svg" alt="Одежда">
+        </div>
+        <div class="filter_block">
+            <span class="filter-text">Автозапчасти</span>
+            <img src="../static/images/frontend/colored/cat_autoparts.svg" alt="Автозапчасти">
+        </div>
+    </div>
+    <div class="filter_settings_block">
+        <img src="../static/images/frontend/filter_settings.svg" alt="Настройки">
+    </div>
+</div>
+
+
+    </div>
+</form>
+
+{% if ads %}
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:20px; width: 88%; margin: 0 auto">
+        {% for ad in ads %}
+            <div class="card">
+    <a href="/ads/{{ ad.id }}" style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height:100%;">
+        <img src="{{ ad.image_url }}" alt="{{ ad.title }}" style="width:100%; height:230px; object-fit:cover; border-radius:8px 8px 0 0;">
+        <div style="padding:12px; display:flex; flex-direction:column; flex:1;">
+            <div style="flex:1;">
+                <h3 style="font-size:17px; margin:0 0 5px;">{{ ad.title }}</h3>
+                <p style="font-size:18px; font-weight:bold; color:#28a745; margin:0 0 5px;">{{ ad.price }} ₽</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:13px; color:#6c757d; margin-top:auto; padding-top:8px; border-top:1px solid #e9ecef;">
+                <span>{{ ad.city_name }}</span>
+                <span>{{ ad.formatted_date }}</span>
+            </div>
+        </div>
+    </a>
+</div>
+        {% endfor %}
+    </div>
+
+    <div style="display:flex; justify-content:space-between; margin-top:30px;">
+        <div>
+            {% if skip > 0 %}
+                <a href="/feed?skip={{ skip - limit }}&limit={{ limit }}&search={{ filters.search or '' }}&category_id={{ filters.category_id or '' }}&city_id={{ filters.city_id or '' }}&min_price={{ filters.min_price or '' }}&max_price={{ filters.max_price or '' }}" class="btn">Предыдущие</a>
+            {% endif %}
+        </div>
+        <div>
+            {% if ads|length == limit %}
+                <a href="/feed?skip={{ skip + limit }}&limit={{ limit }}&search={{ filters.search or '' }}&category_id={{ filters.category_id or '' }}&city_id={{ filters.city_id or '' }}&min_price={{ filters.min_price or '' }}&max_price={{ filters.max_price or '' }}" class="btn">Следующие</a>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <p style="color:#6c757d;">Объявлений с заданными фильтрами нет</p>
+{% endif %}
+
+<style>
+    .card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 340px;
+}
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+}
+
+    .filter_blocks_container {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    width: 90%;
+    margin: 20px auto;
+    gap: 20px;
+}
+
+.filter_blocks {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    flex: 1;
+}
+
+.filter_block {
+    background: #f1f3f5;
+    border-radius: 16px;
+    padding: 10px 15px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.filter_block:hover {
+    background: #e9ecef;
+    border-color: dodgerblue;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.filter_block .filter-text {
+    font-weight: 600;
+    font-size: 18px;
+    color: #212529;
+    z-index: 2;
+    position: relative;
+}
+
+.filter_block img {
+    height: 80%;
+    width: auto;
+    max-width: none;
+    object-fit: cover;
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 1;
+    pointer-events: none;
+    /*transform: rotate(45deg);*/
+}
+
+.filter_settings_block {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    min-height: 100px;
+    background: #f1f3f5;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    border: 1px solid transparent;
+}
+
+.filter_settings_block:hover {
+    background: #e9ecef;
+    border-color: dodgerblue;
+}
+
+.filter_settings_block img {
+    width: 40px;
+    height: auto;
+    opacity: 0.6;
+    transition: 0.2s;
+}
+.filter_settings_block:hover img {
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .filter_blocks_container {
+        flex-direction: column;
+        width: 100%;
+    }
+    .filter_blocks {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .filter_settings_block {
+        width: 100%;
+        min-height: 60px;
+    }
+    color: #1e90ff;
+}
+
+@media (max-width: 480px) {
+    .filter_blocks {
+        grid-template-columns: 1fr 1fr;
+    }
+    .filter_block {
+        height: 80px;
+    }
+    .filter_block .filter-text {
+        font-size: 14px;
+    }
+}
+</style>
+{% endblock %}
