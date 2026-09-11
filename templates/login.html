@@ -1,31 +1,166 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2>Вход</h2>
-<form id="login-form">
-    <div class="form-group">
-        <label for="username">Email</label>
-        <input type="email" id="username" name="username" required>
-    </div>
-    <div class="form-group">
-        <label for="password">Пароль</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <button type="submit" class="btn btn-success">Войти</button>
-</form>
 
-<div id="login-result" class="flash" style="display:none;"></div>
+<div class="auth-wrap">
 
-<p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
+    <h1 class="auth-title">Вход</h1>
+
+    <form id="login-form">
+
+        <div class="card">
+            <h3 class="card-title">🔐 Ваши данные</h3>
+
+            <div class="row">
+                <label for="username">Email <b>*</b></label>
+                <input type="email" id="username" name="username" placeholder="you@example.com" required>
+            </div>
+
+            <div class="row">
+                <label for="password">Пароль <b>*</b></label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-primary">Войти</button>
+        </div>
+
+    </form>
+
+    <div id="login-result" class="flash" style="display:none;"></div>
+
+    <p class="auth-footer">
+        Нет аккаунта? <a href="/register">Зарегистрироваться</a>
+    </p>
+
+</div>
+
+
+<style>
+    .auth-wrap {
+        max-width: 420px;
+        margin: 60px auto;
+    }
+
+    .auth-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 22px;
+        text-align: center;
+    }
+
+    .card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 16px;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #212529;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .row {
+        margin-bottom: 14px;
+    }
+    .row:last-child {
+        margin-bottom: 0;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+    label b {
+        color: #dc3545;
+    }
+
+    input {
+        width: 100%;
+        padding: 10px 13px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 14.5px;
+        font-family: inherit;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    input:focus {
+        border-color: dodgerblue;
+        box-shadow: 0 0 0 3px rgba(30,144,255,0.12);
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        padding: 11px 26px;
+        background: dodgerblue;
+        color: #fff;
+        border: none;
+        border-radius: 22px;
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #0e589f;
+    }
+    .btn-primary:disabled {
+        background: #a5c9e8;
+        cursor: not-allowed;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 18px;
+        font-size: 14px;
+        color: #6c757d;
+    }
+    .auth-footer a {
+        color: dodgerblue;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+</style>
+
 {% endblock %}
+
 
 {% block scripts %}
 <script>
-    document.getElementById('login-form').addEventListener('submit', async function(e) {
+    const form = document.getElementById('login-form');
+
+    form.addEventListener('submit', async function(e) {
         e.preventDefault();
+
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.textContent = 'Входим...';
 
         const formData = new FormData(this);
         const urlEncoded = new URLSearchParams(formData);
+        const resultDiv = document.getElementById('login-result');
 
         try {
             const response = await fetch('/auth/login', {
@@ -35,26 +170,31 @@
                 body: urlEncoded
             });
 
-            const resultDiv = document.getElementById('login-result');
-
             if (response.ok) {
                 resultDiv.className = 'flash flash-success';
-                resultDiv.textContent = 'Вход выполнен.';
+                resultDiv.textContent = 'Вход выполнен. Перенаправляем...';
                 resultDiv.style.display = 'block';
                 setTimeout(() => {
                     window.location.href = '/feed';
-                }, 1000);
+                }, 800);
             } else {
-                const error = await response.json();
+                let msg = 'Неверный email или пароль';
+                try {
+                    const error = await response.json();
+                    msg = error.detail || msg;
+                } catch {}
                 resultDiv.className = 'flash flash-error';
-                resultDiv.textContent = 'Ошибка: ' + JSON.stringify(error.detail || error);
+                resultDiv.textContent = msg;
                 resultDiv.style.display = 'block';
+                btn.disabled = false;
+                btn.textContent = 'Войти';
             }
         } catch (error) {
-            const resultDiv = document.getElementById('login-result');
             resultDiv.className = 'flash flash-error';
             resultDiv.textContent = 'Ошибка соединения: ' + error.message;
             resultDiv.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'Войти';
         }
     });
 </script>

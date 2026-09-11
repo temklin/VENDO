@@ -109,6 +109,11 @@ async def profile_page(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
+
+    user_id = request.session.get("user_id")
+    if not user_id:
+        return RedirectResponse(url="/feed", status_code=303)
+
     user = db.execute(
         text("""
             SELECT id, email, name, phone, avatar_url, rating, registration_date
@@ -132,6 +137,23 @@ async def profile_page(
             """),
         {"user_id": current_user["id"]}
     ).fetchall()
+
+    active_ads = db.execute(
+        text("""
+        SELECT id, title, price, status, created_at, (SELECT name from cities WHERE id = ads.city) as city_name, 
+        (SELECT url from images WHERE ad_id = ads.id order by position limit 1) as image_url
+        from ads WHERE user_id = :user_id AND status = 'active' ORDER BY created_at DESC """),
+        {"user_id": current_user["id"]}
+    ).fetchall()
+
+    archived_ads = db.execute(
+        text("""
+        SELECT id, title, price, status, created_at, (SELECT name from cities WHERE id = ads.city) as city_name, 
+        (SELECT url from images WHERE ad_id = ads.id order by position limit 1) as image_url
+        from ads WHERE user_id = :user_id AND status NOT IN ('active','draft') ORDER BY created_at DESC """),
+        {"user_id": current_user["id"]}
+    ).fetchall()
+    
 
     stats = db.execute(
         text("""
@@ -160,10 +182,11 @@ async def profile_page(
         },
 
         "account_age": account_age,
-        "ads": ads,
         "page_title": "Профиль пользователя",
         "sold_count": sold_count,
-        "earned_sum": earned_sum
+        "earned_sum": earned_sum,
+        "active_ads": active_ads,
+        "archived_ads": archived_ads
     })
 
 
@@ -207,7 +230,7 @@ async def feed(
         query += " AND price <= :max_price"
         params["max_price"] = max_price
     if search:
-        query += " AND title ILIKE :search OR description ILIKE :search"
+        query += " AND (ads.title ILIKE :search OR description ILIKE :search)"
         params["search"] = f"%{search}%"
 
 
@@ -251,6 +274,91 @@ async def feed(
         "limit": limit,
         "user": user,
         "page_title": "Доска объявлений"
+    })
+
+
+
+@app.get('/search')
+async def search_results(
+        request: Request,
+        db: Session = Depends(get_db),
+        search: Optional[str] = None,
+        category_id: Optional[str] = None,
+        city_id: Optional[str] = None,
+        min_price: Optional[str] = None,
+        max_price: Optional[str] = None,
+        skip: int = 0,
+        limit: int = 20
+):
+    category_id = int(category_id) if category_id else None
+    city_id = int(city_id) if city_id else None
+    min_price = float(min_price) if min_price else None
+    max_price = float(max_price) if max_price else None
+
+
+    query = """
+    SELECT ads.id, ads.user_id, ads.category_id, ads.title, ads.description, 
+    ads.price, ads.status, ads.address, ads.params, ads.views_count, ads.created_at, ads.updated_at, cities.name as city_name,
+     (SELECT url FROM images WHERE ad_id = ads.id ORDER BY position LIMIT 1) as image_url FROM ads 
+      LEFT JOIN cities ON cities.id = ads.city
+      WHERE ads.status = 'active'"""
+    params = {}
+
+    if search:
+        query += " AND (ads.title ILIKE :search OR ads.description ILIKE :search)"
+        params["search"] = f"%{search}%"
+
+    if category_id:
+        query += " AND ads.category_id = :category_id"
+        params["category_id"] = category_id
+
+    if city_id:
+        query += " AND ads.city = :city_id"
+        params["city_id"] = city_id
+
+    if min_price:
+        query += " AND ads.price >= :min_price"
+        params["min_price"] = min_price
+
+    if max_price:
+        query += " AND ads.price <= :max_price"
+        params["max_price"] = max_price
+
+    query += " ORDER BY ads.created_at DESC offset :skip LIMIT :limit"
+    params["skip"] = skip
+    params["limit"] = limit
+
+    rows = db.execute(text(query), params).fetchall()
+
+    results = []
+    for row in rows:
+        ad = dict(row._mapping)
+        if not ad.get('image_url'):
+            ad['image_url'] = '/static/images/no-image.png'
+        ad['formatted_date'] = format_date(ad['created_at'])
+        results.append(ad)
+
+    categories = db.execute(text("SELECT id, name FROM categories ORDER BY name")).fetchall()
+
+    cities = db.execute(text("SELECT id, name FROM cities ORDER BY name")).fetchall()
+
+    user = get_user_or_none(request, db)
+
+    return templates.TemplateResponse("search.html", {
+        "request": request,
+        "ads": results,
+        "search": search or '',
+        "categories": categories,
+        "cities": cities,
+        "filters": {
+            "category_id": category_id,
+            "city_id": city_id,
+            "min_price": min_price,
+            "max_price": max_price},
+        "skip": skip,
+        "limit": limit,
+        "user": user,
+        "page_title": f"{search}" if search else  "Поиск объявлений"
     })
 
 
@@ -1181,10 +1289,11 @@ async def favorites_page(
 ):
     rows = db.execute(
         text("""
-            SELECT a.id, a.title, a.price, a.status, a.city, a.address,
+            SELECT a.id, a.title, a.price, a.status, cities.name as city_name, a.address,
                    a.created_at, i.url as image_url
             FROM favorites f
             JOIN ads a ON f.ad_id = a.id
+            LEFT JOIN cities ON cities.id = a.city
             LEFT JOIN images i ON a.id = i.ad_id AND i.position = (
                 SELECT MIN(position) FROM images WHERE ad_id = a.id
             )
@@ -1201,7 +1310,7 @@ async def favorites_page(
             "title": row.title,
             "price": row.price,
             "status": row.status,
-            "city": row.city,
+            "city_name": row.city_name,
             "address": row.address,
             "created_at": row.created_at,
             "image_url": row.image_url or "/static/images/no-image.png"

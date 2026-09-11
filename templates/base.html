@@ -202,25 +202,30 @@
             <a class="logo_link" style="text-decoration: none" href="/feed"><span class="logo">Vendo.</span></a>
             <span class="page-title">{{ page_title or 'Доска объявлений' }}</span>
         </div>
-        <div class="search_input" style="display:flex; flex:1; min-width:200px;">
-            <input  type="text" name="search" value="{{ filters.search or '' }}" placeholder="Поиск по объявлениям" style="flex:1; padding:10px 15px; border:1px solid #ced4da; border-radius:20px 0 0 20px; outline:none;">
+        {% if user %}
+        <form action="/search" method="get" class="search_input" style="display:flex; flex:1; min-width:200px;">
+            <input type="text" name="search" value="{{ filters.search or '' }}" placeholder="Поиск по объявлениям" style="flex:1; padding:10px 15px; border:1px solid #ced4da; border-radius:20px 0 0 20px; outline:none;">
             <button type="submit" class="btn" style="border-radius:0 20px 20px 0; padding:10px 20px;">Поиск</button>
-        </div>
+        </form>
+        {% else %}
+        {% endif %}
         <div class="header-right">
             <div class="menu">
+                {% if user %}
 <!--                <a href="/feed">Объявления</a>-->
                 <a href="/">Создать</a>
                 <a href="/favorites">Избранное</a>
                 <a href="/profile">Профиль</a>
-
+                {% else %}
+                {% endif %}
             </div>
             <div class="user-block">
                 {% if user %}
 <!--                    <span>Привет, <a href="/profile">{{ user.name }}</a></span>-->
 <!--                    <a style="color: white" href="/logout" class="btn btn-danger">Выйти</a>-->
                 {% else %}
-                    <a href="/login" class="btn">Войти</a>
-                    <a href="/register" class="btn btn-outline">Регистрация</a>
+                    <a href="/login" class="btn" style="color: white; text-decoration: none">Войти</a>
+<!--                    <a href="/register" class="btn btn-outline">Регистрация</a>-->
                 {% endif %}
             </div>
         </div>

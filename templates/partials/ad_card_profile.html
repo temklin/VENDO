@@ -1,0 +1,29 @@
+<div class="profile-ad-card">
+    <a href="/ads/{{ ad.id }}" class="card-link">
+        <img src="{{ ad.image_url or '/static/images/no-image.png' }}" alt="{{ ad.title }}" class="card-image">
+        <div class="card-body">
+            <div class="card-main">
+                <h3>{{ ad.title }}</h3>
+                <p class="card-price">{{ ad.price | format_price }} ₽</p>
+                <p class="card-status">
+                    {% if ad.status == 'active' %}
+                        <span class="status-active">Активно</span>
+                    {% elif ad.status == 'draft' %}
+                        <span class="status-draft">Черновик</span>
+                    {% elif ad.status == 'sold' %}
+                        <span class="status-sold">Продано</span>
+                    {% else %}
+                        <span>{{ ad.status }}</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-meta">
+                <span>{{ ad.city_name or '—' }}</span>
+                <span>{{ ad.created_at.strftime('%d.%m.%Y') }}</span>
+            </div>
+        </div>
+    </a>
+    <div class="card-actions">
+        <a href="/ads/{{ ad.id }}/delete" class="card-delete" onclick="return confirm('Удалить объявление?');">Удалить</a>
+    </div>
+</div>

@@ -3,121 +3,529 @@
 {% block content %}
 {% if user %}
 
-<h2 style="margin-top: 3%">Создать объявление</h2>
-<form id="ad-form">
-    <div class="form-group">
-        <label for="category_id">Категория</label>
-        <select id="category_id" name="category_id" required>
-            <option value="">Выберите категорию</option>
-            {% for cat in categories %}
-                <option value="{{ cat.id }}">{{ cat.name }}</option>
-            {% endfor %}
-        </select>
+<div class="form-wrap">
+
+    <h1 class="form-title">Создать объявление</h1>
+
+    <form id="ad-form">
+
+        <div class="card">
+            <h3 class="card-title">📝 Основное</h3>
+
+            <div class="row">
+                <label>Заголовок *</label>
+                <input type="text" name="title" placeholder="iPhone 13 Pro 256GB" required maxlength="255">
+            </div>
+
+            <div class="row-two">
+                <div>
+                    <label>Категория *</label>
+                    <select name="category_id" required>
+                        <option value="">Выберите</option>
+                        {% for cat in categories %}
+                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Статус</label>
+                    <select name="status">
+                        <option value="draft">Черновик</option>
+                        <option value="active" selected>Активно</option>
+                        <option value="sold">Продано</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <label>Описание</label>
+                <textarea name="description" rows="4" placeholder="Состояние, комплектация, причина продажи..."></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">💰 Цена</h3>
+
+            <div class="row" style="max-width: 240px;">
+                <label>Стоимость *</label>
+                <div class="price-input">
+                    <input type="number" name="price" min="0" placeholder="0" required>
+                    <span>₽</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">📍 Где находится</h3>
+
+            <div class="row-two">
+                <div>
+                    <label>Город *</label>
+                    <select name="city" required>
+                        <option value="">Выберите</option>
+                        {% for city in cities %}
+                            <option value="{{ city.id }}">{{ city.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label>Адрес</label>
+                    <input type="text" name="address" placeholder="Улица, дом">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">⚙️ Доп. параметры</h3>
+
+            <div class="row">
+                <label>JSON</label>
+                <textarea name="params" rows="3" placeholder='{"color": "black", "storage": 256}'></textarea>
+                <small>Цвет, память, год, пробег и т.д.</small>
+            </div>
+        </div>
+
+<div class="card">
+    <h3 class="card-title">📷 Фотографии</h3>
+
+    <div class="row">
+        <label>Добавьте фото (до 10 штук)</label>
+
+        <label for="images" class="upload-zone" id="upload-zone">
+            <span class="upload-icon">＋</span>
+            <span class="upload-text">Нажмите, чтобы выбрать фото</span>
+            <span class="upload-hint">JPG, PNG, WEBP — до 5 МБ каждое</span>
+            <input type="file" id="images" name="images" accept="image/*" multiple hidden>
+        </label>
+
+        <div id="preview" class="preview-grid"></div>
     </div>
-
-    <div class="form-group">
-        <label for="title">Заголовок</label>
-        <input type="text" id="title" name="title" required>
-    </div>
-
-    <div class="form-group">
-        <label for="description">Описание</label>
-        <textarea id="description" name="description"></textarea>
-    </div>
-
-    <div class="form-group">
-        <label for="price">Цена</label>
-        <input type="number" id="price" name="price" step="0.01" required>
-    </div>
-
-    <div class="form-group">
-        <label for="status">Статус</label>
-        <select id="status" name="status">
-            <option value="draft">Черновик</option>
-            <option value="active">Активно</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="city">Город</label>
-        <select id="city" name="city" required>
-            <option value="">Выберите город</option>
-            {% for city in cities %}
-                <option value="{{ city.id }}">{{ city.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label for="address">Адрес</label>
-        <input type="text" id="address" name="address">
-    </div>
-
-    <div class="form-group">
-        <label for="params">Параметры (JSON)</label>
-        <textarea id="params" name="params" placeholder='{"color": "red", "mileage": 10000}'></textarea>
-    </div>
-
-    <button type="submit" class="btn btn-success">Создать</button>
-</form>
-
-<div id="result" class="flash" style="display:none;"></div>
-{% else %}
-<h1 style="text-align: center">Добро пожаловать на VENDO - лучший сайт по продаже хлама</h1>
-<div style="text-align: center; display: flex; flex-direction: column">
-    <span style="font-size: 20px;">Авторизуйтесь, чтобы исследовать хлам</span>
-    <a href="/login" class="btn" style="width: 10%; font-size: 30px; margin: 0 auto; margin-top: 2%">Войти</a>
 </div>
 
+        <div class="actions">
+            <a href="/feed" class="btn-outline">Отмена</a>
+            <button type="submit" class="btn-primary">Опубликовать</button>
+        </div>
+
+    </form>
+
+    <div id="result" class="flash" style="display:none;"></div>
+</div>
+
+
+<style>
+    .form-wrap {
+        max-width: 640px;
+        margin: 30px auto;
+    }
+
+    .form-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 22px;
+    }
+
+    .card {
+        background: #fff;
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
+        padding: 20px 22px;
+        margin-bottom: 16px;
+    }
+
+    .card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #212529;
+        margin: 0 0 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+
+    .row {
+        margin-bottom: 14px;
+    }
+    .row:last-child {
+        margin-bottom: 0;
+    }
+
+    .row-two {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+        width: 100%;
+        padding: 9px 12px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        font-size: 14.5px;
+        font-family: inherit;
+        background: #fff;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        border-color: dodgerblue;
+        box-shadow: 0 0 0 3px rgba(30,144,255,0.12);
+    }
+
+    textarea {
+        resize: vertical;
+        min-height: 70px;
+    }
+
+    small {
+        display: block;
+        font-size: 12px;
+        color: #adb5bd;
+        margin-top: 4px;
+    }
+
+    .price-input {
+        position: relative;
+    }
+    .price-input input {
+        padding-right: 40px;
+        font-size: 16px;
+        font-weight: 600;
+    }
+    .price-input span {
+        position: absolute;
+        right: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+        font-weight: 600;
+        pointer-events: none;
+    }
+
+    .actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .btn-primary {
+        padding: 10px 26px;
+        background: dodgerblue;
+        color: #fff;
+        border: none;
+        border-radius: 22px;
+        font-size: 14.5px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #0e589f;
+    }
+
+    .btn-outline {
+        padding: 10px 26px;
+        background: transparent;
+        color: #495057;
+        border: 1px solid #dee2e6;
+        border-radius: 22px;
+        font-size: 14.5px;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+    .btn-outline:hover {
+        background: #f8f9fa;
+    }
+
+    @media (max-width: 560px) {
+        .row-two {
+            grid-template-columns: 1fr;
+        }
+        .actions {
+            flex-direction: column-reverse;
+        }
+        .actions .btn-primary,
+        .actions .btn-outline {
+            width: 100%;
+            text-align: center;
+        }
+        .form-title {
+            font-size: 22px;
+        }
+    }
+.upload-zone {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 28px 20px;
+    border: 2px dashed #dee2e6;
+    border-radius: 12px;
+    background: #fafbfc;
+    cursor: pointer;
+    transition: 0.2s;
+    text-align: center;
+}
+.upload-zone:hover {
+    border-color: dodgerblue;
+    background: #f0f7ff;
+}
+.upload-zone.drag-over {
+    border-color: dodgerblue;
+    background: #e6f2ff;
+}
+.upload-icon {
+    font-size: 28px;
+    color: dodgerblue;
+    font-weight: 300;
+    line-height: 1;
+}
+.upload-text {
+    font-size: 14.5px;
+    font-weight: 500;
+    color: #212529;
+}
+.upload-hint {
+    font-size: 12px;
+    color: #adb5bd;
+}
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 10px;
+    margin-top: 14px;
+}
+.preview-item {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+    background: #f8f9fa;
+}
+.preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.preview-remove {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.65);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 13px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.15s;
+}
+.preview-remove:hover {
+    background: #dc3545;
+}
+</style>
+
+{% else %}
+<div style="text-align: center; padding: 80px 20px;">
+    <h1 style="font-size: 32px; margin-bottom: 12px;">Добро пожаловать на VENDO</h1>
+    <p style="color: #6c757d; font-size: 16px; margin-bottom: 25px;">Войдите, чтобы создавать объявления</p>
+    <a href="/login" class="btn-primary" style="text-decoration: none; display: inline-block;">Войти</a>
+    <a href="/register" class="btn-outline" style="text-decoration: none; display: inline-block; margin-left: 10px;">Регистрация</a>
+</div>
 {% endif %}
 {% endblock %}
 
+
 {% block scripts %}
 <script>
-    document.getElementById('ad-form').addEventListener('submit', async function(e) {
-        e.preventDefault();
+    const fileInput = document.getElementById('images');
+    const preview   = document.getElementById('preview');
+    const uploadZone = document.getElementById('upload-zone');
+    let selectedFiles = [];
 
-        const formData = new FormData(this);
-        const data = {
-            category_id: parseInt(formData.get('category_id')),
-            title: formData.get('title'),
-            description: formData.get('description'),
-            price: parseFloat(formData.get('price')),
-            status: formData.get('status'),
-            city: parseInt(formData.get('city')),
-            address: formData.get('address'),
-            params: JSON.parse(formData.get('params') || '{}')
-        };
+    const MAX_FILES = 10;
+    const MAX_SIZE  = 10 * 1024 * 1024;
+    const ALLOWED   = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-        try {
-            const response = await fetch('/advertisements/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(data)
-            });
+    function renderPreview() {
+        preview.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+            const item = document.createElement('div');
+            item.className = 'preview-item';
 
-            const result = await response.json();
-            const resultDiv = document.getElementById('result');
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(file);
+            img.onload = () => URL.revokeObjectURL(img.src);
+            item.appendChild(img);
 
-            if (response.ok) {
-                resultDiv.className = 'flash flash-success';
-                resultDiv.textContent = 'Объявление создано! ID: ' + result.id;
-                resultDiv.style.display = 'block';
-                this.reset();
-            } else {
-                resultDiv.className = 'flash flash-error';
-                resultDiv.textContent = 'Ошибка: ' + JSON.stringify(result.detail || result);
-                resultDiv.style.display = 'block';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'preview-remove';
+            btn.textContent = '✕';
+            btn.onclick = () => {
+                selectedFiles.splice(index, 1);
+                renderPreview();
+            };
+            item.appendChild(btn);
+
+            preview.appendChild(item);
+        });
+    }
+
+    function addFiles(fileList) {
+        const incoming = Array.from(fileList);
+
+        for (const file of incoming) {
+            if (selectedFiles.length >= MAX_FILES) {
+                alert('Максимум ' + MAX_FILES + ' фото');
+                break;
             }
-        } catch (error) {
-            const resultDiv = document.getElementById('result');
-            resultDiv.className = 'flash flash-error';
-            resultDiv.textContent = 'Ошибка соединения: ' + error.message;
-            resultDiv.style.display = 'block';
+            if (!ALLOWED.includes(file.type)) {
+                alert('Недопустимый формат: ' + file.name);
+                continue;
+            }
+            if (file.size > MAX_SIZE) {
+                alert('Файл больше 5 МБ: ' + file.name);
+                continue;
+            }
+            selectedFiles.push(file);
         }
+        renderPreview();
+    }
+
+    fileInput.addEventListener('change', (e) => {
+        addFiles(e.target.files);
+        fileInput.value = '';
     });
+
+    ['dragover', 'dragenter'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('drag-over');
+        });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        uploadZone.addEventListener(evt, (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('drag-over');
+        });
+    });
+    uploadZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length) addFiles(e.dataTransfer.files);
+    });
+
+    const adForm = document.getElementById('ad-form');
+
+    if (adForm) {
+        adForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(this);
+            const submitBtn = this.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Публикуем...';
+
+
+            let params = {};
+            try {
+                const raw = formData.get('params') || '{}';
+                params = raw.trim() ? JSON.parse(raw) : {};
+            } catch {
+                showResult('Неверный JSON в параметрах', 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Опубликовать';
+                return;
+            }
+
+            const payload = {
+                category_id: parseInt(formData.get('category_id')),
+                title: formData.get('title'),
+                description: formData.get('description'),
+                price: parseFloat(formData.get('price')),
+                status: formData.get('status'),
+                city: parseInt(formData.get('city')),
+                address: formData.get('address'),
+                params
+            };
+
+            try {
+                const res = await fetch('/advertisements/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+
+                if (!res.ok) {
+                    showResult('Ошибка: ' + JSON.stringify(result.detail || result), 'error');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Опубликовать';
+                    return;
+                }
+
+                const adId = result.id;
+
+
+                if (selectedFiles.length > 0) {
+                    submitBtn.textContent = 'Загружаем фото...';
+
+                    const imgData = new FormData();
+                    selectedFiles.forEach(f => imgData.append('files', f));
+
+                    const imgRes = await fetch('/ads/' + adId + '/images/', {
+                        method: 'POST',
+                        credentials: 'include',
+                        body: imgData
+                    });
+
+                    if (!imgRes.ok) {
+
+                        showResult('Объявление создано, но фото не загрузились. Переходим...', 'error');
+                        setTimeout(() => location.href = '/ads/' + adId, 1500);
+                        return;
+                    }
+                }
+
+                showResult('Готово! Перенаправляем...', 'success');
+                setTimeout(() => location.href = '/ads/' + adId, 700);
+
+            } catch (err) {
+                showResult('Ошибка соединения: ' + err.message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Опубликовать';
+            }
+        });
+    }
+
+    function showResult(msg, type) {
+        const el = document.getElementById('result');
+        el.className = 'flash flash-' + type;
+        el.textContent = msg;
+        el.style.display = 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
 </script>
-
-
 {% endblock %}

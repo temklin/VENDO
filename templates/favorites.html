@@ -1,78 +1,222 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2 style="margin-top: 3%">Избранные объявления</h2>
 
-{% if favorites %}
-    <div class="ads-grid">
-        {% for ad in favorites %}
-            <div class="ad-card">
-                <a href="/ads/{{ ad.id }}">
-                    <img src="{{ ad.image_url }}" alt="{{ ad.title }}" class="ad-image">
-                    <div class="ad-info">
-                        <h3>{{ ad.title }}</h3>
-                        <p class="price">{{ ad.price }} ₽</p>
-                        <p class="status {% if ad.status == 'active' %}active{% else %}inactive{% endif %}">
-                            {{ ad.status }}
-                        </p>
-                        <p class="city">{{ ad.city }}</p>
-                        <p class="date">{{ ad.created_at.strftime('%d.%m.%Y') }}</p>
-                    </div>
-                </a>
-                <a href="/favorites/remove/{{ ad.id }}" class="btn btn-danger btn-sm">Удалить</a>
-            </div>
-        {% endfor %}
+<div class="fav-wrap">
+
+    <div class="fav-header">
+        <h1>Избранное</h1>
+        <p>{{ favorites|length }} сохранённых объявлений</p>
     </div>
-{% else %}
-    <p>У вас пока нет избранных объявлений.</p>
-    <a href="/feed" class="btn btn-success">Перейти к объявлениям</a>
-{% endif %}
+
+    {% if favorites %}
+        <div class="fav-grid">
+            {% for ad in favorites %}
+                <div class="fav-card">
+                    <a href="/ads/{{ ad.id }}" class="fav-link">
+                        <img src="{{ ad.image_url or '/static/images/no-image.png' }}" alt="{{ ad.title }}" class="fav-image">
+                        <div class="fav-body">
+                            <div class="fav-main">
+                                <h3>{{ ad.title }}</h3>
+                                <p class="fav-price">{{ ad.price | format_price }} ₽</p>
+                            </div>
+                            <div class="fav-meta">
+                                <span>{{ ad.city_name or '—' }}</span>
+                                <span>{{ ad.created_at.strftime('%d.%m.%Y') }}</span>
+                            </div>
+                        </div>
+                    </a>
+                    <div class="fav-actions">
+                        <a href="/favorites/remove/{{ ad.id }}" class="fav-remove" onclick="return confirm('Убрать из избранного?');">Убрать</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="fav-empty">
+            <p class="fav-empty-icon">♡</p>
+            <p class="fav-empty-title">Здесь пока пусто</p>
+            <p class="fav-empty-text">Сохраняйте объявления, чтобы вернуться к ним позже</p>
+            <a href="/feed" class="btn-primary">Перейти к объявлениям</a>
+        </div>
+    {% endif %}
+
+</div>
 
 <style>
-    .ads-grid {
+    .fav-wrap {
+        max-width: 1000px;
+        margin: 30px auto;
+        padding: 0 20px;
+    }
+
+    .fav-header {
+        margin-bottom: 24px;
+    }
+    .fav-header h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #212529;
+        margin: 0 0 4px;
+    }
+    .fav-header p {
+        font-size: 14px;
+        color: #6c757d;
+        margin: 0;
+    }
+
+    .fav-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 20px;
-        margin-top: 20px;
     }
-    .ad-card {
-        border: 1px solid #ddd;
-        border-radius: 8px;
+
+    .fav-card {
+        border: 1px solid #e9ecef;
+        border-radius: 12px;
         overflow: hidden;
-        background: white;
-        transition: transform 0.2s;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s;
     }
-    .ad-card:hover {
-        transform: scale(1.02);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    .fav-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0,0,0,0.08);
     }
-    .ad-image {
+
+    .fav-link {
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .fav-image {
         width: 100%;
         height: 200px;
         object-fit: cover;
-    }
-    .ad-info {
-        padding: 15px;
-    }
-    .ad-info h3 {
-        margin: 0 0 10px;
-        font-size: 18px;
-    }
-    .price {
-        font-size: 20px;
-        font-weight: bold;
-        color: #28a745;
-    }
-    .status.active { color: #28a745; }
-    .status.inactive { color: #6c757d; }
-    .city, .date {
-        color: #6c757d;
-        font-size: 14px;
-    }
-    .btn-sm {
         display: block;
-        margin: 10px 15px 15px;
+    }
+
+    .fav-body {
+        padding: 12px;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .fav-main {
+        flex: 1;
+    }
+    .fav-main h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #212529;
+        margin: 0 0 6px;
+        line-height: 1.3;
+    }
+    .fav-price {
+        font-size: 17px;
+        font-weight: 700;
+        color: #28a745;
+        margin: 0 0 10px;
+    }
+
+    .fav-meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 12.5px;
+        color: #6c757d;
+        padding-top: 8px;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .fav-actions {
+        padding: 8px 12px 12px;
+        border-top: 1px solid #f1f3f5;
+    }
+    .fav-remove {
+        display: block;
         text-align: center;
+        padding: 8px 0;
+        background: #f8f9fa;
+        color: #495057;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: 0.2s;
+    }
+    .fav-remove:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    .fav-empty {
+        text-align: center;
+        padding: 70px 20px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 16px;
+    }
+    .fav-empty-icon {
+        font-size: 48px;
+        color: #ced4da;
+        margin: 0 0 12px;
+    }
+    .fav-empty-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #212529;
+        margin: 0 0 6px;
+    }
+    .fav-empty-text {
+        font-size: 14.5px;
+        color: #6c757d;
+        margin: 0 0 22px;
+    }
+
+    .btn-primary {
+        display: inline-block;
+        padding: 11px 28px;
+        background: dodgerblue;
+        color: #fff;
+        border: none;
+        border-radius: 22px;
+        font-size: 15px;
+        font-weight: 500;
+        text-decoration: none;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .btn-primary:hover {
+        background: #0e589f;
+    }
+
+    @media (max-width: 560px) {
+        .fav-wrap {
+            margin: 20px auto;
+            padding: 0 14px;
+        }
+        .fav-grid {
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        .fav-image {
+            height: 140px;
+        }
+        .fav-main h3 {
+            font-size: 14px;
+        }
+        .fav-price {
+            font-size: 15px;
+        }
+        .fav-meta {
+            font-size: 11px;
+        }
     }
 </style>
+
 {% endblock %}
