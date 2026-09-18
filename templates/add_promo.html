@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-wrap">
+    <h1 class="auth-title">Разместить рекламу</h1>
+
+    <form id="advertise-form">
+        <div class="card">
+            <h3 class="card-title">🏢 О компании</h3>
+            <div class="row">
+                <label>Название компании *</label>
+                <input type="text" name="brand_name" required>
+            </div>
+            <div class="row">
+                <label>Контактный email *</label>
+                <input type="email" name="brand_email" required>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">🎨 Баннер</h3>
+            <div class="row">
+                <label>Заголовок *</label>
+                <input type="text" name="title" required maxlength="255">
+            </div>
+            <div class="row">
+                <label>Описание</label>
+                <input type="text" name="description" maxlength="255">
+            </div>
+            <div class="row">
+                <label>Ссылка на картинку *</label>
+                <input type="url" name="image_url" placeholder="https://..." required>
+            </div>
+            <div class="row">
+                <label>Ссылка на сайт *</label>
+                <input type="url" name="link_url" placeholder="https://..." required>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button type="submit" class="btn-primary">Отправить заявку</button>
+        </div>
+    </form>
+
+    <div id="result" class="flash" style="display:none;"></div>
+</div>
+
+<script>
+    document.getElementById('advertise-form').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+        const data = Object.fromEntries(fd.entries());
+
+        const res = await fetch('/promo/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        const resultDiv = document.getElementById('result');
+
+        if (res.ok) {
+            resultDiv.className = 'flash flash-success';
+            resultDiv.textContent = 'Заявка отправлена! Мы свяжемся с вами по указанному email.';
+            resultDiv.style.display = 'block';
+            this.reset();
+        } else {
+            const err = await res.json();
+            resultDiv.className = 'flash flash-error';
+            resultDiv.textContent = 'Ошибка: ' + JSON.stringify(err.detail || err);
+            resultDiv.style.display = 'block';
+        }
+    });
+</script>
+
+<style>
+    .auth-wrap { max-width: 560px; margin: 40px auto; }
+    .auth-title { font-size: 26px; text-align: center; margin-bottom: 22px; }
+    .card { background: #fff; border: 1px solid #e9ecef; border-radius: 12px; padding: 22px; margin-bottom: 16px; }
+    .card-title { font-size: 15px; font-weight: 600; margin: 0 0 16px; padding-bottom: 12px; border-bottom: 1px solid #f1f3f5; }
+    .row { margin-bottom: 14px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+    input { width: 100%; padding: 10px 13px; border: 1px solid #dee2e6; border-radius: 8px; font-size: 14.5px; outline: none; }
+    input:focus { border-color: dodgerblue; box-shadow: 0 0 0 3px rgba(30,144,255,0.12); }
+    .btn-primary { width: 100%; padding: 12px; background: dodgerblue; color: #fff; border: none; border-radius: 22px; font-size: 15px; font-weight: 500; cursor: pointer; }
+    .btn-primary:hover { background: #0e589f; }
+</style>
+
+{% endblock %}

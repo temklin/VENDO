@@ -100,3 +100,30 @@ class CityCreate(BaseModel):
 
 class CityResponse(CityCreate):
     id: int
+
+
+#реклама
+
+class PromoCreate(BaseModel):
+    brand_name: str
+    brand_email: str
+    title: str
+    description: Optional[str] = None
+    image_url: str
+    link_url: str
+
+
+class PromoResponse(BaseModel):
+    id: int
+    brand_name: str
+    brand_email: str
+    title: str
+    description: Optional[str] = None
+    image_url: str
+    link_url: str
+    status: str
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    views_count: int
+    clicks_count: int
+    created_at: datetime

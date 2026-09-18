@@ -250,6 +250,27 @@ async def feed(
             ad['image_url'] = '/static/images/no-image.png'
         ads_list.append(ad)
 
+
+    promo = db.execute(text("""
+        SELECT id, title, description, image_url, link_url FROM promo WHERE status = 'active'
+        AND (start_date IS NULL OR start_date <= NOW()) AND (end_date IS NULL OR end_date >= NOW())
+        ORDER BY RANDOM() LIMIT 10""")).fetchall()
+
+    promo_list = [dict(p._mapping) for p in promo]
+
+
+    if promo_list:
+        result_feed = []
+        promo_index = 0
+        for i, ad in enumerate(ads_list, start=1):
+            result_feed.append(ad)
+            if i % 6 == 0 and promo_index < len(promo_list):
+                promo = promo_list[promo_index].copy()
+                promo['is_promo'] = True
+                result_feed.append(promo)
+                promo_index += 1
+        ads_list = result_feed
+
     categories = db.execute(text("SELECT id, name FROM categories ORDER BY name")).fetchall()
 
     cities = db.execute(text("SELECT id, name FROM cities ORDER BY name")).fetchall()
@@ -900,6 +921,62 @@ def delete_user(user_id: int, db: Session = Depends(get_db)):
     if result.rowcount == 0:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "user deleted"}
+
+
+
+### РЕКЛАМА
+
+@app.post("/promo/", response_model=schemas.PromoResponse)
+def create_promo(promo: schemas.PromoCreate, db: Session = Depends(get_db)):
+    result = db.execute(
+        text("""INSERT INTO promo (brand_name, brand_email, title, description, image_url, link_url, status)
+        VALUES (:brand_name, :brand_email, :title, :description, :image_url, :link_url, 'active')
+        RETURNING id, brand_name, brand_email, title, description, image_url, link_url, status, start_date, end_date,
+        views_count, clicks_count, created_at"""),
+        {
+            "brand_name": promo.brand_name,
+            "brand_email": promo.brand_email,
+            "title": promo.title,
+            "description": promo.description,
+            "image_url": promo.image_url,
+            "link_url": promo.link_url
+        }
+    )
+    db.commit()
+    row = result.fetchone()
+    return dict(row._mapping)
+
+
+@app.get("/promo_create_page")
+async def promo_create_page(request: Request):
+    user = get_user_or_none(request, SessionLocal())
+    return templates.TemplateResponse("add_promo.html", {
+        "request": request,
+        "user": user,
+        "page_title": "Разместить рекламу"
+    })
+
+
+@app.get("/promo/{promo_id}/click", response_model=schemas.PromoResponse)
+def promo_click(promo_id: int, db: Session = Depends(get_db)):
+    row = db.execute(
+        text("UPDATE promo SET clicks_count = clicks_count + 1 WHERE id = :id RETURNING link_url"),
+    {"id": promo_id}).fetchone()
+    db.commit()
+    #надо наверное добавить проверку какую-то
+
+@app.get("/promo/{promo_id}/view")
+def promo_view(promo_id: int, db: Session = Depends(get_db)):
+    db.execute(
+        text("UPDATE promo SET views_count = views_count + 1 WHERE id = :id"),
+        {"id": promo_id}
+    )
+    db.commit()
+    return {"ok": True}
+
+
+
+
 
 
 

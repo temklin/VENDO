@@ -90,3 +90,21 @@ class City(Base):
     __tablename__ = "cities"
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
+
+class Promo(Base):
+    __tablename__ = "promo"
+    id = Column(Integer, primary_key=True, index=True)
+    brand_name = Column(String(255), nullable=False)
+    brand_email = Column(String(255), nullable=False)
+    title = Column(String(255), nullable=False)
+    description = Column(String, nullable=True)
+    image_url = Column(String, nullable=True)
+    link_url = Column(String(255), nullable=True)
+    status = Column(String, nullable=False, default="active", index=True)
+    start_date = Column(DateTime, nullable=True)
+    end_date = Column(DateTime, nullable=True)
+    views_count = Column(Integer, server_default="0")
+    clicks_count = Column(Integer, server_default="0")
+    position = Column(Integer, default=0)
+    created_at = Column(DateTime, server_default=func.now())
+

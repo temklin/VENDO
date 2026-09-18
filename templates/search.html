@@ -25,6 +25,10 @@
         <button type="submit" class="btn" style="padding: 12px 30px; border-radius: 30px; font-size: 16px;">
             Найти
         </button>
+        <input type="hidden" name="category_id" value="{{ filters.category_id or '' }}">
+    <input type="hidden" name="city_id" value="{{ filters.city_id or '' }}">
+    <input type="hidden" name="min_price" value="{{ filters.min_price or '' }}">
+    <input type="hidden" name="max_price" value="{{ filters.max_price or '' }}">
     </form>
 
     <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: end; background: #f8f9fa; padding: 15px; border-radius: 12px;">
@@ -53,6 +57,10 @@
         <div>
             <label style="font-size: 13px; font-weight: 600; display: block; margin-bottom: 4px;">Цена до</label>
             <input type="number" name="max_price" form="filter-form" value="{{ filters.max_price or '' }}" style="width: 110px; padding: 8px 12px; border-radius: 8px; border: 1px solid #ced4da;">
+        </div>
+                <div>
+            <button type="submit" form="filter-form" class="btn" style="padding: 9px 20px;">Применить</button>
+            <a href="/search{% if search %}?search={{ search }}{% endif %}" class="btn btn-outline" style="padding: 9px 20px; margin-left: 4px;">Сбросить</a>
         </div>
     </div>
 

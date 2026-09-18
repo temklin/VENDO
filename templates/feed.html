@@ -76,8 +76,21 @@
 </form>
 
 {% if ads %}
+
     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:20px; width: 88%; margin: 0 auto">
         {% for ad in ads %}
+            {% if ad.is_promo %}
+            <div class="card promo_card" data-promo-id="{{ ad.id }}">
+                <a href="/promo/{{ ad.id }}/click" target="_blank" rel="noopener" style="text-decoration: none; color: inherit; display: flex; flex-direction: column; height: 100%;">
+                    <div style="margin-left: 2%; font-size: 13px; padding: 3px" class="promo-badge">Реклама</div>
+                    <img src="{{ ad.image_url }}" alt="{{ ad.title }}" style="width: 100%; height: 230px; object-fit: cover; border-radius: 8px 8px 0 0;">
+                    <div style="padding: 12px; display: flex; flex-direction: column; flex: 1;">
+                        <h3 style="font-size: 17px; margin: 0 0 5px;">{{ ad.title }}</h3>
+                        <p style="font-size: 13px; color: #6c757d; margin: 0;">{{ ad.description or '' }}</p>
+                    </div>
+                </a>
+            </div>
+            {% else %}
             <div class="card">
     <a href="/ads/{{ ad.id }}" style="text-decoration:none; color:inherit; display:flex; flex-direction:column; height:100%;">
         <img src="{{ ad.image_url }}" alt="{{ ad.title }}" style="width:100%; height:230px; object-fit:cover; border-radius:8px 8px 0 0;">
@@ -92,7 +105,7 @@
             </div>
         </div>
     </a>
-</div>
+</div>  {% endif %}
         {% endfor %}
     </div>
 
@@ -113,6 +126,35 @@
 {% endif %}
 
 <style>
+
+
+
+
+.promo_card {
+    position: relative;
+    border: 2px solid #ffd166;
+
+}
+.promo_card:hover {
+    translate: none;
+    border-color: #0abd00;
+    box-shadow: 0 6px 20px rgba(245,184,0,0.2);
+}
+.promo-badge {
+    display: flex;
+    position: relative;
+    margin-left: 50%;
+    color: black;
+    font-size: 11px;
+    font-weight: 400;
+    padding: 3px 8px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+
     .card {
     border: 1px solid #e9ecef;
     border-radius: 8px;
@@ -242,10 +284,11 @@
     .filter_block .filter-text {
         font-size: 14px;
     }
+
+
 }
 </style>
 {% else %}
-<!-- Приветственный блок для неавторизованных -->
 <div class="welcome-wrap">
 
     <div class="welcome-hero">
@@ -259,7 +302,6 @@
         </div>
     </div>
 
-    <!-- Преимущества -->
     <div class="welcome-features">
         <div class="feature-card">
             <div class="feature-icon">⚡</div>
@@ -278,7 +320,6 @@
         </div>
     </div>
 
-    <!-- Превью возможностей -->
     <div class="welcome-stats">
         <div class="stat-item">
             <div class="stat-num">1000+</div>
@@ -382,7 +423,6 @@
         color: dodgerblue;
     }
 
-    /* Преимущества */
     .welcome-features {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -422,7 +462,6 @@
         line-height: 1.4;
     }
 
-    /* Статистика */
     .welcome-stats {
         display: flex;
         justify-content: center;
@@ -454,7 +493,6 @@
         font-weight: 600;
     }
 
-    /* Адаптив */
     @media (max-width: 700px) {
         .welcome-hero h1 {
             font-size: 30px;
@@ -479,7 +517,24 @@
             width: 100%;
             text-align: center;
         }
+
+
     }
+
+
 </style>
 {% endif %}
+
+
+
+{% endblock %}
+{% block scripts %}
+<script>
+    document.querySelectorAll('.promo-card').forEach(card => {
+        const id = card.dataset.promoId;
+        if (id) {
+            fetch('/promo/' + id + '/view', { credentials: 'include' }).catch(() => {});
+        }
+    });
+</script>
 {% endblock %}

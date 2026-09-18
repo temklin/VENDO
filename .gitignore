@@ -20,6 +20,7 @@ alembic/versions/__pycache__/
 *.swo
 
 static/images/
+static/avatars/
 
 
 *.log
